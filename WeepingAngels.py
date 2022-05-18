@@ -64,6 +64,7 @@ while True:
     NoFaceFound = True
     TimeSinceLastFace = 0
   
+  # Maybe make this work
   k = (cv2.waitKey(30) & 0xff)
   if (k==27):
     break
