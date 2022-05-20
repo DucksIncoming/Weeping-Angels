@@ -9,9 +9,9 @@ import time
 from pyfirmata import Arduino, SERVO
 
 # Arduino config
-port = "COM6" # Set to the USB port of your arduino device
-servoPin = 9 # Set to your servo pin (digital only)
-debugMode = True
+port = "COM3" # Set to the USB port of your arduino device
+servoPin = 4 # Set to your servo pin (digital only)
+debugMode = False
 NoFaceFound = True
 
 capture = cv2.VideoCapture(0)
@@ -61,10 +61,12 @@ while True:
   if (TimeSinceLastFace > 15 and NoFaceFound == False):
     print("LastFace X Pos: " + str(lastFace))
     targetRotation = ((lastFace - 160.0) / 160.0) * 30.0
-    if (not debugMode):
-      board.digital[servoPin].write(rotationMemory + targetRotation)
+    #if (not debugMode):
+      #board.digital[servoPin].write((rotationMemory + targetRotation) % 360)
+    board.digital[servoPin].write(45)
+    print("test")
     rotationMemory += targetRotation
-    print(targetRotation)
+    print(rotationMemory)
     NoFaceFound = True
     TimeSinceLastFace = 0
   
@@ -74,3 +76,4 @@ while True:
     break
 
 capture.release()
+board.exit()
