@@ -9,7 +9,7 @@ import time
 from pyfirmata import Arduino, SERVO
 
 # Arduino config
-port = "COM3" # Set to the USB port of your arduino device
+port = "COM7" # Set to the USB port of your arduino device
 servoPin = 4 # Set to your servo pin (digital only)
 debugMode = False
 NoFaceFound = True
@@ -29,11 +29,14 @@ if (not debugMode):
   board.digital[servoPin].mode = SERVO
   board.digital[servoPin].write(0)
 
+
 lastFace = [0, 0]
 TimeSinceLastFace = 0
 rotationMemory = 0.0
 targetRotation = 0.0
 
+running = 0
+  
 while True:
   _, img = capture.read()
   face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -49,7 +52,7 @@ while True:
       faceFound = True
       cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 2)
       i += 1
-      lastFace = x+(w/2)
+      lastFace = 320 - x+(w/2)
       print("X: " + str(x))
       print("W: " + str(x+(w/2)))
 
@@ -60,16 +63,12 @@ while True:
 
   if (TimeSinceLastFace > 15 and NoFaceFound == False):
     print("LastFace X Pos: " + str(lastFace))
-    targetRotation = ((lastFace - 160.0) / 160.0) * 30.0
-    #if (not debugMode):
-      #board.digital[servoPin].write((rotationMemory + targetRotation) % 360)
-    board.digital[servoPin].write(45)
-    print("test")
-    rotationMemory += targetRotation
-    print(rotationMemory)
+    targetRotation += rotationMemory
+    targetRotation = 60 * ((lastFace - 160) / 160)
+    board.digital[servoPin].write(targetRotation % 180)
+    rotationMemory = targetRotation
     NoFaceFound = True
-    TimeSinceLastFace = 0
-  
+    
   # Maybe make this work? I'll consider it
   k = (cv2.waitKey(30) & 0xff)
   if (k==27):
