@@ -9,14 +9,16 @@ import time
 from pyfirmata import Arduino, SERVO
 
 # Arduino config
-port = "COM7" # Set to the USB port of your arduino device
-servoPin = 4 # Set to your servo pin (digital only)
+port = "COM9" # Set to the USB port of your arduino device
+servoPin = 3 # Set to your servo pin (digital only)
 debugMode = False
 NoFaceFound = True
+WIDTH = 720
+HEIGHT = 480
 
 capture = cv2.VideoCapture(0)
-capture.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 180)
+capture.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
+capture.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
 
 if (not debugMode):
   try:
@@ -27,12 +29,12 @@ if (not debugMode):
     quit()
 
   board.digital[servoPin].mode = SERVO
-  board.digital[servoPin].write(0)
+  board.digital[servoPin].write(100) # Halfway
 
 
 lastFace = [0, 0]
 TimeSinceLastFace = 0
-rotationMemory = 0.0
+rotationMemory = 100.0
 targetRotation = 0.0
 
 running = 0
@@ -52,7 +54,7 @@ while True:
       faceFound = True
       cv2.rectangle(img, (x, y), (x+w, y+h), (255,0,0), 2)
       i += 1
-      lastFace = 320 - x+(w/2)
+      lastFace =  x + (w / 2)
       print("X: " + str(x))
       print("W: " + str(x+(w/2)))
 
@@ -63,11 +65,15 @@ while True:
 
   if (TimeSinceLastFace > 15 and NoFaceFound == False):
     print("LastFace X Pos: " + str(lastFace))
-    targetRotation += rotationMemory
-    targetRotation = 60 * ((lastFace - 160) / 160)
-    board.digital[servoPin].write(targetRotation % 180)
+    lastFaceRelative = lastFace - (WIDTH / 2)
+    print(lastFaceRelative)
+    
+    targetRotation = ((lastFaceRelative / (WIDTH/2) * 30) * -1) + rotationMemory
     rotationMemory = targetRotation
+    print(targetRotation)
+    
     NoFaceFound = True
+    board.digital[servoPin].write(targetRotation)
     
   # Maybe make this work? I'll consider it
   k = (cv2.waitKey(30) & 0xff)
