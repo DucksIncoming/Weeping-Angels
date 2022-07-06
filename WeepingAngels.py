@@ -15,6 +15,9 @@ debugMode = False
 NoFaceFound = True
 WIDTH = 720
 HEIGHT = 480
+FOV = 60
+DELAY = 15
+SERVO_MAX_ROTATION = 200
 
 capture = cv2.VideoCapture(0)
 capture.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
@@ -29,7 +32,7 @@ if (not debugMode):
     quit()
 
   board.digital[servoPin].mode = SERVO
-  board.digital[servoPin].write(100) # Halfway
+  board.digital[servoPin].write(SERVO_MAX_ROTATION / 2)
 
 
 lastFace = [0, 0]
@@ -63,12 +66,12 @@ while True:
 
   print(TimeSinceLastFace)
 
-  if (TimeSinceLastFace > 15 and NoFaceFound == False):
+  if (TimeSinceLastFace > DELAY and NoFaceFound == False):
     print("LastFace X Pos: " + str(lastFace))
     lastFaceRelative = lastFace - (WIDTH / 2)
     print(lastFaceRelative)
     
-    targetRotation = ((lastFaceRelative / (WIDTH/2) * 30) * -1) + rotationMemory
+    targetRotation = ((lastFaceRelative / (WIDTH/2) * (FOV/2)) * -1) + rotationMemory
     rotationMemory = targetRotation
     print(targetRotation)
     
